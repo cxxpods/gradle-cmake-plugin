@@ -111,25 +111,30 @@ tasks.withType<Test> {
   useJUnitPlatform()
 }
 
-afterEvaluate {
-  configure<BintrayExtension> {
-    user = "jonglanz"
-    key = System.getenv("BINTRAY_API_KEY") ?: ""
-    publish = true
-    override = true
-    setPublications(*allPublications.map { it.name }.toTypedArray())
-    pkg(delegateClosureOf<BintrayExtension.PackageConfig> {
-      repo = "oss"
-      name = project.name
-      userOrg = "densebrain"
-      setLicenses("MIT")
-      vcsUrl = "https://github.com/cxxpods/gradle-cmake-plugin.git"
-      setVersion(VersionConfig().apply {
-        released = Date().toString()
-        name = project.version as String
-      })
-    })
-  }
+val bintrayKey = System.getenv("BINTRAY_API_KEY") ?: ""
+val bintrayUser = System.getenv("BINTRAY_USER") ?: ""
 
-  tasks.getByName("publish").dependsOn("bintrayUpload", "assemble")
+if (bintrayUser.isNotEmpty() && bintrayKey.isNotEmpty()) {
+  afterEvaluate {
+    configure<BintrayExtension> {
+      user = bintrayUser
+      key = bintrayKey
+      publish = true
+      override = true
+      setPublications(*allPublications.map { it.name }.toTypedArray())
+      pkg(delegateClosureOf<BintrayExtension.PackageConfig> {
+        repo = "oss"
+        name = project.name
+        userOrg = "densebrain"
+        setLicenses("MIT")
+        vcsUrl = "https://github.com/cxxpods/gradle-cmake-plugin.git"
+        setVersion(VersionConfig().apply {
+          released = Date().toString()
+          name = project.version as String
+        })
+      })
+    }
+
+    tasks.getByName("publish").dependsOn("bintrayUpload", "assemble")
+  }
 }
