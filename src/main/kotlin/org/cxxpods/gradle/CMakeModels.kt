@@ -186,7 +186,8 @@ open class CMakeOptions {
       val dir = File(sdkHome, "ndk-bundle")
       assert(dir.exists()) { "Unable to determine ANDROID_NDK from env or by check the SDK ${sdkHome}"}
       dir.absolutePath
-    }
+    },
+    version: String? = null
   ) {
     val sdk = File(sdkHome)
     val ndk = File(ndkHome)
@@ -198,6 +199,7 @@ open class CMakeOptions {
     val cmakeExes = sdk.walk()
       .maxDepth(4)
       .filter { it.nameWithoutExtension == "cmake" && it.canExecute() && !it.isDirectory }
+      .filter { version == null || it.absolutePath.contains(version)}
       .toList()
 
     assert(cmakeExes.isNotEmpty()) { "Unable to find any `cmake` versions installed"}

@@ -4,7 +4,6 @@ import org.gradle.api.GradleScriptException
 import org.gradle.api.Project
 import org.gradle.api.logging.LogLevel
 import java.io.File
-import java.io.IOException
 
 class CMakeExecutor internal constructor(private val project: Project, private val taskName: String) {
 
@@ -12,8 +11,6 @@ class CMakeExecutor internal constructor(private val project: Project, private v
 
   @Throws(GradleException::class)
   fun exec(cmdLine: CMakeCommandLine, cwd: File = cmdLine.workingDir) {
-    // log command line parameters
-
     val parts = cmdLine.build()
     logger.quiet("\tCMakePlugin.task $taskName - exec:")
     logger.quiet(parts.joinToString(" "))
@@ -38,9 +35,7 @@ class CMakeExecutor internal constructor(private val project: Project, private v
         captureStandardError(errorLevel)
         captureStandardOutput(outLevel)
       }
-    } catch (e: IOException) {
-      throw GradleScriptException("CMakeExecutor[$taskName].", e)
-    } catch (e: InterruptedException) {
+    } catch (e: Throwable) {
       throw GradleScriptException("CMakeExecutor[$taskName].", e)
     }
 

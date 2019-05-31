@@ -29,6 +29,8 @@ open class CMakePluginExtension(private val project: Project) : CMakeOptions() {
 
   private val prop = PropFactory(this, project)
 
+
+
   // parameters used by config step
   var workingDir = File(project.buildDir,"cmake")
 
