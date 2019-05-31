@@ -88,6 +88,7 @@ data class CMakeTargetConfig(
   val workingDir: File = File(project.cmakeExtension!!.workingDir, "${name}/${target}"),
   val configTaskName: String = toTaskName("configure", target, buildType, toolchain),
   val buildTaskName: String = toTaskName("build", target, buildType, toolchain),
+  val installTaskName: String = toTaskName("install", target, buildType, toolchain),
   val cleanTaskName: String = toTaskName("clean", target, buildType, toolchain)
 ) {
 
@@ -233,11 +234,11 @@ open class CMakeCommandLine(project: Project, val workingDir: File) : CMakeOptio
   }
 
   fun makeToolOption(vararg values: Any?) {
-    values.filterNotNull().forEach {
+    values.mapNotNull { it?.toString() }.forEach {
       if (makeToolOptions.isEmpty())
         makeToolOptions.add("--")
 
-      makeToolOptions.add(it.toString())
+      makeToolOptions.add(it)
     }
   }
 
@@ -246,7 +247,8 @@ open class CMakeCommandLine(project: Project, val workingDir: File) : CMakeOptio
       cmakeExe,
       *toArgs(),
       *toOptions(),
-      *positionals.toTypedArray()
+      *positionals.toTypedArray(),
+      *makeToolOptions.toTypedArray()
     )
 
 

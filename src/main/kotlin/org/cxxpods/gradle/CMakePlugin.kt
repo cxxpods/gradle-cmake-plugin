@@ -18,8 +18,10 @@ package org.cxxpods.gradle
 
 import org.cxxpods.gradle.util.cmd
 import org.cxxpods.gradle.util.io
-import org.gradle.api.*
-
+import org.gradle.api.GradleException
+import org.gradle.api.Plugin
+import org.gradle.api.Project
+import org.gradle.api.Task
 import java.io.File
 
 open class CMakePlugin : Plugin<Project> {
@@ -43,14 +45,15 @@ open class CMakePlugin : Plugin<Project> {
       project.apply {
         tasks.apply {
 
-          val (configTasks, buildTasks, cleanTasks) =
+          val (configTasks, buildTasks, installTasks, cleanTasks) =
             e.targetConfigs.fold(
-              Triple(
-                mutableListOf<CMakeConfigureTask>(),
-                mutableListOf<CMakeBuildTask>(),
-                mutableListOf<Task>()
+              listOf<MutableList<Task>>(
+                mutableListOf(),
+                mutableListOf(),
+                mutableListOf(),
+                mutableListOf()
               )
-            ) { (configTasks, buildTasks, cleanTasks), t ->
+            ) { (configTasks, buildTasks, installTasks, cleanTasks), t ->
 
               io.mkdirs(t.workingDir)
               val workingTargetDir = File(t.workingDir, t.target).apply {
@@ -63,7 +66,10 @@ open class CMakePlugin : Plugin<Project> {
                 config = t
               }
 
-              val buildTask =  create(t.buildTaskName, CMakeBuildTask::class.java) {
+              /**
+               * Make build task
+               */
+              val buildTask = create(t.buildTaskName, CMakeBuildTask::class.java) {
                 dependsOn(configTask)
 
                 group = "cmake"
@@ -71,6 +77,19 @@ open class CMakePlugin : Plugin<Project> {
                 config = t
 
               }
+
+              /**
+               * Make install task
+               */
+              val installTask = create(t.installTaskName, CMakeInstallTask::class.java) {
+                dependsOn(buildTask)
+
+                group = "cmake"
+                description = "Install CMake Target"
+                config = t
+
+              }
+
 
               val cmakeClean = create(t.cleanTaskName) {
                 group = "cmake"
@@ -91,8 +110,9 @@ open class CMakePlugin : Plugin<Project> {
               configTasks.add(configTask)
               buildTasks.add(buildTask)
               cleanTasks.add(cmakeClean)
+              installTasks.add(installTask)
 
-              Triple(configTasks, buildTasks, cleanTasks)
+              listOf(configTasks, buildTasks, installTasks, cleanTasks)
             }
 
           val cmakeGenerators = create("cmakeGenerators") {
@@ -123,11 +143,11 @@ open class CMakePlugin : Plugin<Project> {
             dependsOn(cleanTasks)
           }
 
-
+          create("cmakeInstallAll") {
+            dependsOn(installTasks)
+          }
         }
-
       }
     }
   }
-
 }

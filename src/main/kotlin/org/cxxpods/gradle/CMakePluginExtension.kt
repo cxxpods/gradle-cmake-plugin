@@ -32,7 +32,7 @@ open class CMakePluginExtension(private val project: Project) : CMakeOptions() {
   // parameters used by config step
   var workingDir = File(project.buildDir,"cmake")
 
-  var parallel by prop(Runtime.getRuntime().availableProcessors())
+  var parallel = Runtime.getRuntime().availableProcessors()
 
   var def = project.objects.mapProperty(String::class.java, String::class.java)
 

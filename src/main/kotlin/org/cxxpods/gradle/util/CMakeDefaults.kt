@@ -1,7 +1,6 @@
 package org.cxxpods.gradle.util
 
 import org.cxxpods.gradle.CMakeOptions
-import org.cxxpods.gradle.CMakePluginExtension
 import org.gradle.api.Project
 import java.io.File
 
